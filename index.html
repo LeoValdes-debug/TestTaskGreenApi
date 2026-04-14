@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GREEN-API Client</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e0d;
+      --surface: #111714;
+      --surface2: #1a211d;
+      --border: #243028;
+      --green: #25d366;
+      --green-dim: #1a9e4a;
+      --green-glow: rgba(37, 211, 102, 0.15);
+      --text: #e8f0ea;
+      --text-dim: #7a9480;
+      --text-muted: #3d5244;
+      --red: #ff4d4d;
+      --yellow: #ffd166;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* GLOW ORBS */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(37,211,102,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* HEADER */
+    header {
+      margin-bottom: 48px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .logo-mark {
+      flex-shrink: 0;
+      width: 52px;
+      height: 52px;
+      border: 1.5px solid var(--green);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--green-glow), inset 0 0 20px var(--green-glow);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 20px var(--green-glow), inset 0 0 20px var(--green-glow); }
+      50% { box-shadow: 0 0 35px rgba(37,211,102,0.25), inset 0 0 35px rgba(37,211,102,0.1); }
+    }
+
+    .logo-mark svg { width: 28px; height: 28px; }
+
+    .header-text h1 {
+      font-family: var(--sans);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .status-dot.connected {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* SECTION */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .section:hover { border-color: #2d3d34; }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* CREDENTIALS GRID */
+    .creds-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) { .creds-grid { grid-template-columns: 1fr; } }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"], input[type="password"] {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    input:focus {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+
+    input::placeholder { color: var(--text-muted); }
+
+    /* TOGGLE PASSWORD */
+    .input-wrap { position: relative; }
+
+    .input-wrap input { padding-right: 40px; }
+
+    .toggle-vis {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .toggle-vis:hover { color: var(--text-dim); }
+
+    /* SEND PARAMS */
+    .send-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) { .send-grid { grid-template-columns: 1fr; } }
+
+    .send-file-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) { .send-file-grid { grid-template-columns: 1fr; } }
+
+    /* BUTTONS */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .btn:active::before { opacity: 0.05; }
+
+    .btn-primary {
+      background: var(--green);
+      color: #0a1a0f;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: #2de670;
+      box-shadow: 0 0 20px rgba(37,211,102,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--green-dim);
+      color: var(--green);
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+    }
+
+    .btn.loading .spinner { display: block; }
+    .btn.loading .btn-icon { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* RESPONSE AREA */
+    .response-section {
+      margin-top: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .response-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .method-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--green-glow);
+      color: var(--green);
+      border: 1px solid rgba(37,211,102,0.2);
+      font-weight: 700;
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .copy-btn:hover { border-color: var(--green-dim); color: var(--green); }
+
+    .response-body {
+      padding: 20px;
+      font-size: 12.5px;
+      line-height: 1.8;
+      min-height: 120px;
+      max-height: 380px;
+      overflow-y: auto;
+      color: var(--text-dim);
+    }
+
+    .response-body::-webkit-scrollbar { width: 4px; }
+    .response-body::-webkit-scrollbar-track { background: transparent; }
+    .response-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .response-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 80px;
+      color: var(--text-muted);
+      font-size: 12px;
+      gap: 8px;
+    }
+
+    /* JSON HIGHLIGHTING */
+    .json-key { color: #7ec8a0; }
+    .json-str { color: #c8e6c9; }
+    .json-num { color: #ffd166; }
+    .json-bool { color: #81d4fa; }
+    .json-null { color: var(--text-muted); }
+
+    /* STATUS TAGS */
+    .tag-success {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(37,211,102,0.1);
+      color: var(--green);
+      border: 1px solid rgba(37,211,102,0.2);
+    }
+
+    .tag-error {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255,77,77,0.1);
+      color: var(--red);
+      border: 1px solid rgba(255,77,77,0.2);
+    }
+
+    /* HISTORY */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .history-item:hover {
+      border-color: var(--green-dim);
+    }
+
+    .history-method {
+      font-weight: 700;
+      color: var(--green);
+      min-width: 130px;
+    }
+
+    .history-time {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-left: auto;
+    }
+
+    .history-status { font-size: 10px; }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-color: var(--green-dim); }
+    .toast.error { border-color: var(--red); }
+
+    /* SEPARATOR */
+    .or-separator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .or-separator::before,
+    .or-separator::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      background: var(--surface2);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 7px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--green);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    footer a { color: var(--green-dim); text-decoration: none; }
+    footer a:hover { color: var(--green); }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M17.6 6.32A7.85 7.85 0 0012.05 4C7.63 4 4.01 7.62 4 12.05a8.05 8.05 0 001.08 4.03L4 20l4.03-1.05a7.97 7.97 0 003.84.98h.03c4.42 0 8.03-3.62 8.04-8.04 0-2.15-.83-4.17-2.34-5.57z" fill="#25d366"/>
+        <path d="M17.6 6.32A7.85 7.85 0 0012.05 4C7.63 4 4.01 7.62 4 12.05a8.05 8.05 0 001.08 4.03L4 20l4.03-1.05a7.97 7.97 0 003.84.98h.03c4.42 0 8.03-3.62 8.04-8.04 0-2.15-.83-4.17-2.34-5.57z" stroke="#0a1a0f" stroke-width="0.5" fill="none"/>
+        <path d="M9.64 8.5c-.17-.38-.35-.39-.52-.4l-.43-.01c-.15 0-.4.06-.6.28-.2.23-.8.78-.8 1.9s.82 2.2.93 2.36c.12.15 1.6 2.53 3.93 3.45.55.23.98.37 1.31.47.55.17 1.05.15 1.45.09.44-.07 1.36-.56 1.56-1.1.2-.54.2-1 .14-1.1-.06-.1-.22-.16-.46-.28-.24-.12-1.36-.67-1.57-.75-.21-.08-.37-.12-.52.12-.16.24-.6.75-.74.9-.14.16-.27.18-.5.06-.24-.12-1-.37-1.9-1.18-.7-.63-1.17-1.41-1.31-1.65-.14-.24-.01-.37.1-.49.1-.11.24-.28.36-.42.12-.15.16-.25.24-.41.08-.17.04-.31-.02-.43-.06-.12-.52-1.26-.73-1.72z" fill="#0a1a0f"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>GREEN-API Client</h1>
+      <p>WhatsApp Instance API — тестовый клиент</p>
+      <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">не подключено</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CREDENTIALS -->
+  <div class="section">
+    <div class="section-label">Подключение к инстансу</div>
+    <div class="creds-grid">
+      <div class="field-group">
+        <label>idInstance</label>
+        <input type="text" id="idInstance" placeholder="1234567890" autocomplete="off" />
+      </div>
+      <div class="field-group">
+        <label>ApiTokenInstance</label>
+        <div class="input-wrap">
+          <input type="password" id="apiToken" placeholder="••••••••••••••••••••" autocomplete="off" />
+          <button class="toggle-vis" onclick="toggleToken()" title="Показать/скрыть">
+            <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('read')">📖 Чтение</button>
+    <button class="tab" onclick="switchTab('send')">✉️ Сообщение</button>
+    <button class="tab" onclick="switchTab('file')">📎 Файл</button>
+    <button class="tab" onclick="switchTab('history')">🕓 История</button>
+  </div>
+
+  <!-- TAB: READ -->
+  <div class="tab-content active" id="tab-read">
+    <div class="section">
+      <div class="section-label">Информация об инстансе</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="callMethod('getSettings')">
+          <span class="btn-icon">⚙️</span>
+          <div class="spinner"></div>
+          getSettings
+        </button>
+        <button class="btn btn-ghost" onclick="callMethod('getStateInstance')">
+          <span class="btn-icon">📡</span>
+          <div class="spinner"></div>
+          getStateInstance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SEND MESSAGE -->
+  <div class="tab-content" id="tab-send">
+    <div class="section">
+      <div class="section-label">sendMessage</div>
+      <div class="send-grid">
+        <div class="field-group">
+          <label>Номер получателя</label>
+          <input type="text" id="sendPhone" placeholder="79001234567" />
+        </div>
+        <div class="field-group">
+          <label>Текст сообщения</label>
+          <input type="text" id="sendText" placeholder="Привет из GREEN-API!" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="callMethod('sendMessage')">
+          <span class="btn-icon">🚀</span>
+          <div class="spinner"></div>
+          sendMessage
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SEND FILE -->
+  <div class="tab-content" id="tab-file">
+    <div class="section">
+      <div class="section-label">sendFileByUrl</div>
+      <div class="send-file-grid">
+        <div class="field-group">
+          <label>Номер получателя</label>
+          <input type="text" id="filePhone" placeholder="79001234567" />
+        </div>
+        <div class="field-group">
+          <label>URL файла</label>
+          <input type="text" id="fileUrl" placeholder="https://example.com/file.pdf" />
+        </div>
+        <div class="field-group">
+          <label>Имя файла</label>
+          <input type="text" id="fileName" placeholder="document.pdf" />
+        </div>
+      </div>
+      <div class="field-group" style="margin-bottom:16px">
+        <label>Подпись (необязательно)</label>
+        <input type="text" id="fileCaption" placeholder="Описание файла" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="callMethod('sendFileByUrl')">
+          <span class="btn-icon">📤</span>
+          <div class="spinner"></div>
+          sendFileByUrl
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORY -->
+  <div class="tab-content" id="tab-history">
+    <div class="section">
+      <div class="section-label">История запросов</div>
+      <div id="historyList">
+        <div class="response-placeholder">
+          <span style="opacity:0.4">нет запросов</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESPONSE -->
+  <div class="response-section">
+    <div class="response-header">
+      <div class="response-title">
+        ОТВЕТ
+        <span class="method-badge" id="responseBadge" style="display:none"></span>
+      </div>
+      <button class="copy-btn" onclick="copyResponse()" id="copyBtn" style="display:none">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        копировать
+      </button>
+    </div>
+    <div class="response-body" id="responseBody">
+      <div class="response-placeholder">
+        <span>↑</span>
+        <span>выполните запрос, чтобы увидеть ответ</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>GREEN-API Client &mdash; тестовое задание &mdash; <a href="https://green-api.com/docs/" target="_blank">Документация</a></p>
+  </footer>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+  const BASE = 'https://api.green-api.com';
+  let lastResponse = '';
+  let history = [];
+
+  // ─── TABS ───────────────────────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      const names = ['read', 'send', 'file', 'history'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ─── TOGGLE TOKEN VISIBILITY ─────────────────────────────────────────────
+  function toggleToken() {
+    const inp = document.getElementById('apiToken');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  // ─── GET CREDENTIALS ─────────────────────────────────────────────────────
+  function getCreds() {
+    const id = document.getElementById('idInstance').value.trim();
+    const token = document.getElementById('apiToken').value.trim();
+    if (!id || !token) {
+      showToast('Введите idInstance и ApiTokenInstance', 'error');
+      return null;
+    }
+    return { id, token };
+  }
+
+  // ─── MAIN CALL ────────────────────────────────────────────────────────────
+  async function callMethod(method) {
+    const creds = getCreds();
+    if (!creds) return;
+
+    const btn = [...document.querySelectorAll('.btn')].find(b => b.textContent.trim().includes(method));
+    if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+
+    try {
+      let result;
+      switch (method) {
+        case 'getSettings':
+          result = await apiGet(creds, 'getSettings'); break;
+        case 'getStateInstance':
+          result = await apiGet(creds, 'getStateInstance'); break;
+        case 'sendMessage':
+          result = await sendMessage(creds); break;
+        case 'sendFileByUrl':
+          result = await sendFile(creds); break;
+      }
+      if (result !== undefined) {
+        showResponse(result, method);
+        addHistory(method, true, result);
+        showToast(`${method} — успешно`, 'success');
+        if (method === 'getStateInstance') updateStatus(result);
+      }
+    } catch (err) {
+      const errObj = { error: err.message };
+      showResponse(errObj, method, true);
+      addHistory(method, false, errObj);
+      showToast(err.message, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+    }
+  }
+
+  // ─── API HELPERS ──────────────────────────────────────────────────────────
+  async function apiGet(creds, endpoint) {
+    const url = `${BASE}/waInstance${creds.id}/${endpoint}/${creds.token}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    return await res.json();
+  }
+
+  async function apiPost(creds, endpoint, body) {
+    const url = `${BASE}/waInstance${creds.id}/${endpoint}/${creds.token}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    return await res.json();
+  }
+
+  async function sendMessage(creds) {
+    const phone = document.getElementById('sendPhone').value.trim();
+    const text = document.getElementById('sendText').value.trim();
+    if (!phone) throw new Error('Введите номер получателя');
+    if (!text) throw new Error('Введите текст сообщения');
+    return await apiPost(creds, 'sendMessage', {
+      chatId: `${phone}@c.us`,
+      message: text
+    });
+  }
+
+  async function sendFile(creds) {
+    const phone = document.getElementById('filePhone').value.trim();
+    const url = document.getElementById('fileUrl').value.trim();
+    const name = document.getElementById('fileName').value.trim();
+    const caption = document.getElementById('fileCaption').value.trim();
+    if (!phone) throw new Error('Введите номер получателя');
+    if (!url) throw new Error('Введите URL файла');
+    if (!name) throw new Error('Введите имя файла');
+    const body = { chatId: `${phone}@c.us`, urlFile: url, fileName: name };
+    if (caption) body.caption = caption;
+    return await apiPost(creds, 'sendFileByUrl', body);
+  }
+
+  // ─── RESPONSE DISPLAY ─────────────────────────────────────────────────────
+  function showResponse(data, method, isError = false) {
+    const body = document.getElementById('responseBody');
+    const badge = document.getElementById('responseBadge');
+    const copyBtn = document.getElementById('copyBtn');
+
+    const json = JSON.stringify(data, null, 2);
+    lastResponse = json;
+
+    badge.textContent = method;
+    badge.style.display = 'inline-flex';
+    copyBtn.style.display = 'flex';
+
+    body.innerHTML = `<pre>${syntaxHighlight(json)}</pre>`;
+  }
+
+  function syntaxHighlight(json) {
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+      let cls = 'json-num';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) cls = 'json-key';
+        else cls = 'json-str';
+      } else if (/true|false/.test(match)) cls = 'json-bool';
+      else if (/null/.test(match)) cls = 'json-null';
+      return `<span class="${cls}">${match}</span>`;
+    });
+  }
+
+  // ─── HISTORY ──────────────────────────────────────────────────────────────
+  function addHistory(method, success, data) {
+    const now = new Date();
+    const time = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    history.unshift({ method, success, data, time });
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (!history.length) {
+      list.innerHTML = '<div class="response-placeholder"><span style="opacity:0.4">нет запросов</span></div>';
+      return;
+    }
+    list.innerHTML = history.map((item, i) => `
+      <div class="history-item" onclick="showHistoryItem(${i})">
+        <span class="history-method">${item.method}</span>
+        <span class="history-status ${item.success ? 'tag-success' : 'tag-error'}">
+          ${item.success ? '✓ OK' : '✗ ERR'}
+        </span>
+        <span class="history-time">${item.time}</span>
+      </div>
+    `).join('');
+  }
+
+  function showHistoryItem(i) {
+    const item = history[i];
+    showResponse(item.data, item.method, !item.success);
+    switchTab('read');
+    document.querySelectorAll('.tab')[0].click();
+  }
+
+  // ─── STATUS ───────────────────────────────────────────────────────────────
+  function updateStatus(data) {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    if (data && data.stateInstance) {
+      const s = data.stateInstance;
+      dot.className = 'status-dot' + (s === 'authorized' ? ' connected' : '');
+      txt.textContent = s === 'authorized' ? 'подключено' : s;
+    }
+  }
+
+  // ─── COPY ─────────────────────────────────────────────────────────────────
+  function copyResponse() {
+    if (!lastResponse) return;
+    navigator.clipboard.writeText(lastResponse).then(() => showToast('Скопировано в буфер', 'success'));
+  }
+
+  // ─── TOAST ────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toastIcon');
+    const text = document.getElementById('toastMsg');
+    icon.textContent = type === 'success' ? '✓' : '✗';
+    text.textContent = msg;
+    toast.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.className = `toast ${type}`, 3000);
+  }
+</script>
+</body>
+</html>
