@@ -38,7 +38,7 @@
       overflow-x: hidden;
     }
 
-    /* GRID BACKGROUND */
+
     body::before {
       content: '';
       position: fixed;
@@ -52,7 +52,7 @@
       z-index: 0;
     }
 
-    /* GLOW ORBS */
+
     body::after {
       content: '';
       position: fixed;
@@ -73,7 +73,7 @@
       padding: 48px 24px 80px;
     }
 
-    /* HEADER */
+  
     header {
       margin-bottom: 48px;
       display: flex;
@@ -116,7 +116,7 @@
       margin-top: 4px;
     }
 
-    /* STATUS BAR */
+
     .status-bar {
       display: flex;
       align-items: center;
@@ -145,7 +145,7 @@
       50% { opacity: 0.5; }
     }
 
-    /* SECTION */
+
     .section {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -176,7 +176,7 @@
       background: var(--border);
     }
 
-    /* CREDENTIALS GRID */
+ 
     .creds-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -213,7 +213,7 @@
 
     input::placeholder { color: var(--text-muted); }
 
-    /* TOGGLE PASSWORD */
+   
     .input-wrap { position: relative; }
 
     .input-wrap input { padding-right: 40px; }
@@ -233,7 +233,7 @@
 
     .toggle-vis:hover { color: var(--text-dim); }
 
-    /* SEND PARAMS */
+   
     .send-grid {
       display: grid;
       grid-template-columns: 1fr 2fr;
@@ -252,7 +252,7 @@
 
     @media (max-width: 600px) { .send-file-grid { grid-template-columns: 1fr; } }
 
-    /* BUTTONS */
+   
     .btn-row {
       display: flex;
       gap: 10px;
@@ -334,7 +334,7 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* RESPONSE AREA */
+    
     .response-section {
       margin-top: 20px;
       background: var(--surface);
@@ -414,14 +414,14 @@
       gap: 8px;
     }
 
-    /* JSON HIGHLIGHTING */
+    
     .json-key { color: #7ec8a0; }
     .json-str { color: #c8e6c9; }
     .json-num { color: #ffd166; }
     .json-bool { color: #81d4fa; }
     .json-null { color: var(--text-muted); }
 
-    /* STATUS TAGS */
+  
     .tag-success {
       display: inline-flex;
       align-items: center;
@@ -446,7 +446,7 @@
       border: 1px solid rgba(255,77,77,0.2);
     }
 
-    /* HISTORY */
+  
     .history-list {
       display: flex;
       flex-direction: column;
@@ -484,14 +484,13 @@
 
     .history-status { font-size: 10px; }
 
-    /* DIVIDER */
+   
     .divider {
       height: 1px;
       background: var(--border);
       margin: 8px 0;
     }
 
-    /* TOAST */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -520,7 +519,7 @@
     .toast.success { border-color: var(--green-dim); }
     .toast.error { border-color: var(--red); }
 
-    /* SEPARATOR */
+  
     .or-separator {
       display: flex;
       align-items: center;
@@ -538,7 +537,7 @@
       background: var(--border);
     }
 
-    /* TABS */
+  
     .tabs {
       display: flex;
       gap: 4px;
@@ -574,7 +573,7 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* FOOTER */
+   
     footer {
       text-align: center;
       margin-top: 60px;
@@ -589,7 +588,7 @@
 <body>
 <div class="wrapper">
 
-  <!-- HEADER -->
+  
   <header>
     <div class="logo-mark">
       <svg viewBox="0 0 24 24" fill="none">
@@ -608,7 +607,7 @@
     </div>
   </header>
 
-  <!-- CREDENTIALS -->
+ 
   <div class="section">
     <div class="section-label">Подключение к инстансу</div>
     <div class="creds-grid">
@@ -630,7 +629,6 @@
     </div>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('read')">📖 Чтение</button>
     <button class="tab" onclick="switchTab('send')">✉️ Сообщение</button>
@@ -638,7 +636,7 @@
     <button class="tab" onclick="switchTab('history')">🕓 История</button>
   </div>
 
-  <!-- TAB: READ -->
+  
   <div class="tab-content active" id="tab-read">
     <div class="section">
       <div class="section-label">Информация об инстансе</div>
@@ -657,7 +655,7 @@
     </div>
   </div>
 
-  <!-- TAB: SEND MESSAGE -->
+
   <div class="tab-content" id="tab-send">
     <div class="section">
       <div class="section-label">sendMessage</div>
@@ -681,7 +679,7 @@
     </div>
   </div>
 
-  <!-- TAB: SEND FILE -->
+
   <div class="tab-content" id="tab-file">
     <div class="section">
       <div class="section-label">sendFileByUrl</div>
@@ -713,7 +711,7 @@
     </div>
   </div>
 
-  <!-- TAB: HISTORY -->
+  
   <div class="tab-content" id="tab-history">
     <div class="section">
       <div class="section-label">История запросов</div>
@@ -725,7 +723,7 @@
     </div>
   </div>
 
-  <!-- RESPONSE -->
+
   <div class="response-section">
     <div class="response-header">
       <div class="response-title">
@@ -752,7 +750,7 @@
   </footer>
 </div>
 
-<!-- TOAST -->
+
 <div class="toast" id="toast">
   <span id="toastIcon">✓</span>
   <span id="toastMsg"></span>
@@ -763,7 +761,7 @@
   let lastResponse = '';
   let history = [];
 
-  // ─── TABS ───────────────────────────────────────────────────────────────────
+ 
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
       const names = ['read', 'send', 'file', 'history'];
@@ -773,13 +771,12 @@
     document.getElementById('tab-' + name).classList.add('active');
   }
 
-  // ─── TOGGLE TOKEN VISIBILITY ─────────────────────────────────────────────
   function toggleToken() {
     const inp = document.getElementById('apiToken');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   }
 
-  // ─── GET CREDENTIALS ─────────────────────────────────────────────────────
+
   function getCreds() {
     const id = document.getElementById('idInstance').value.trim();
     const token = document.getElementById('apiToken').value.trim();
@@ -790,7 +787,6 @@
     return { id, token };
   }
 
-  // ─── MAIN CALL ────────────────────────────────────────────────────────────
   async function callMethod(method) {
     const creds = getCreds();
     if (!creds) return;
@@ -826,7 +822,6 @@
     }
   }
 
-  // ─── API HELPERS ──────────────────────────────────────────────────────────
   async function apiGet(creds, endpoint) {
     const url = `${BASE}/waInstance${creds.id}/${endpoint}/${creds.token}`;
     const res = await fetch(url);
@@ -869,7 +864,6 @@
     return await apiPost(creds, 'sendFileByUrl', body);
   }
 
-  // ─── RESPONSE DISPLAY ─────────────────────────────────────────────────────
   function showResponse(data, method, isError = false) {
     const body = document.getElementById('responseBody');
     const badge = document.getElementById('responseBadge');
@@ -897,7 +891,6 @@
     });
   }
 
-  // ─── HISTORY ──────────────────────────────────────────────────────────────
   function addHistory(method, success, data) {
     const now = new Date();
     const time = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -929,7 +922,6 @@
     document.querySelectorAll('.tab')[0].click();
   }
 
-  // ─── STATUS ───────────────────────────────────────────────────────────────
   function updateStatus(data) {
     const dot = document.getElementById('statusDot');
     const txt = document.getElementById('statusText');
@@ -940,13 +932,11 @@
     }
   }
 
-  // ─── COPY ─────────────────────────────────────────────────────────────────
   function copyResponse() {
     if (!lastResponse) return;
     navigator.clipboard.writeText(lastResponse).then(() => showToast('Скопировано в буфер', 'success'));
   }
 
-  // ─── TOAST ────────────────────────────────────────────────────────────────
   let toastTimer;
   function showToast(msg, type = 'success') {
     const toast = document.getElementById('toast');
